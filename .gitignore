@@ -9,6 +9,6 @@ yarn.lock
 **/.DS_Store
 
 # App-specific
-_site/
+dist/
 node-supporters/
 src/_data/builtwith/
