@@ -1,4 +1,18 @@
+const prettier = require("prettier");
+
 module.exports = eleventyConfig => {
+    // Format HTML
+    eleventyConfig.addTransform("prettyHtml", (content, outputPath) => {
+        if (outputPath && outputPath.endsWith(".html")) {
+          try {
+            return prettier.format(content, { parser: "html" });
+          } catch (error) {
+            console.warn("Error prettifying HTML:", error);
+          }
+        }
+        return content;
+      });
+    
     return {
         markdownTemplateEngine: 'njk',
         htmlTemplateEngine: 'njk',
