@@ -1,4 +1,4 @@
-module.exports = {
+export default {
 	title: "sndrsn.com",
 	url: "https://www.sndrsn.com/",
 	language: "en",

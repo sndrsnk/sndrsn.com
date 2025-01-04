@@ -1,19 +1,52 @@
 <!doctype html>
 <html lang="{{ metadata.language }}">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>{{ title or metadata.title }}</title>
-		<meta name="description" content="{{ description or metadata.description }}">
-		<link rel="alternate" href="feed/feed.xml" type="application/atom+xml" title="{{ metadata.title }}">
-        <meta name="generator" content="{{ eleventy.generator }}">
-		{# <style>{% getBundle "css" %}</style> #}
-	</head>
-	<body>
-		<header>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ title or metadata.title }}</title>
+        <meta name="description" content="{{ description or metadata.description }}">
+        <link rel="alternate" href="feed/feed.xml" type="application/atom+xml" title="{{ metadata.title }}">
+    <meta
+        name="generator" content="{{ eleventy.generator }}">
+    {# <style>{% getBundle "css" %}</style> #}
+    </head>
+    <body>
+        <header>
+            <a href="/" class="home-link">{{ metadata.title }}</a>
+            <nav>
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a href="posts">Posts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="portfolio">Projects</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="about">About Me</a>
+                    </li>
+                </ul>
+            </nav>
         </header>
-		<main>
-			{{ content | safe }}
-		</main>
+        <main>
+            {{ content | safe }}
+        </main>
+        <footer>
+            <p>
+                Built with
+                <a href="https://www.11ty.dev/">Eleventy</a>.
+            </p><hr>
+            <ul class="footer-links">
+                <li>
+                    <a title="About Me" href="/about/">Kevin Sanderson</a>
+                </li>
+                <li>
+                    <a title="Kevin Sanderson on LinkedIn" href="https://www.linkedin.com/in/ksndrsn/">LinkedIn</a>
+                </li>
+                <li>
+                    <a title="@sndrsnk on GitHub" href="https://github.com/sndrsnk">GitHub</a>
+                </li>
+            </ul>
+            <p></p>
+        </footer>
     </body>
 </html>
