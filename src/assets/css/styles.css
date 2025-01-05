@@ -1,0 +1,124 @@
+/* Defaults */
+:root {
+    --font-family: Helvetica, -apple-system, system-ui, sans-serif;
+    --font-family-monospace: Menlo, Consolas, Monaco, Andale Mono WT, Andale Mono, Lucida Console, Lucida Sans Typewriter, DejaVu Sans Mono, Bitstream Vera Sans Mono, Liberation Mono, Nimbus Mono L, Courier New, Courier, monospace;
+}
+
+/* Theme colors */
+:root {
+  --color-background: #d9d9d9;
+  --color-foreground: #252525;
+  --color-accent: #3d00a7;
+  --color-muted: #525252;
+  --color-border: #858585;
+
+  --color-title: #bba487;
+  --color-menu-items: rgb(189 189 189);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-background: #252525;
+        --color-foreground: #d9d9d9;
+        --color-accent: #3d00a7;
+        --color-muted: #999999;
+        --color-border: #858585;
+    }
+}
+
+/* Global stylesheet */
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    /* padding: 0 24px; */
+    margin: 0;
+    height: 100vh;
+    font-size: 14px;
+    /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+    font-family: var(--font-family);
+}
+
+html {
+	overflow-y: scroll;
+}
+
+body {
+	max-width: 45em;
+    padding: 2em;
+}
+
+a, a:visited, a:hover, a:active {
+	color: inherit;
+  }
+/* 
+@media (max-width: 768px) {
+    body {
+        font-size: 16px;
+        padding: 0 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+        padding: 0 4px;
+    }
+} */
+
+/* END global styles */
+
+/* navigation */
+nav {
+    border-right: 7px rgb(108, 108, 108) solid;
+    padding-right: 10px;
+    text-align: right;
+    color: rgb(108, 108, 108);
+    margin: 4rem 0 2rem 0
+}
+
+nav h1 {
+    margin: 0;
+    text-align: right;
+    font-size: 1.8rem;
+    color: var(--color-title);
+}
+
+nav ul {
+    display: inline-block;
+    text-decoration: none;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    color: var(--color-menu-items);
+}
+
+nav ul li a {
+    text-decoration: none;
+    text-transform: lowercase;
+    font-size: 0.8em;
+    color: inherit;
+    letter-spacing: 0.12rem;
+}
+
+nav span.nav-separator {
+    font-size: 0.8rem;
+    vertical-align: middle;
+}
+
+nav span.nav-separator:before {
+    content: '//';
+    padding: 0 5px;
+    /* line-height: ; */
+    vertical-align: middle;
+}
+
+/* END navigation */
