@@ -7,18 +7,21 @@
 /* Theme colors */
 :root {
     --color-background: #ffffff;
-    --color-background-highlight: #cfcfcf;
-    --color-foreground: #252525;
+    --color-background-highlight: #f1f1f1;
+    --color-foreground: #373737;
     --color-accent: #3d00a7;
-    --color-muted: #525252;
+    --color-muted: #676767;
     --color-border: #858585;
 
-    --color-title: #bba487;
+    /* --color-title: #bba487; */
+    --color-title: #276a8e;
     --color-menu-items: #858585;
-    --color-border-bar: #323232;
-    --color-border-muted: #323232;
+    --color-border-bar: var(--color-title);
+    --color-border-muted: #504a5b;
 
-    --color-h2: #9087b5;
+    --color-headings: #252525;
+    --color-h2: #504a5b;
+    --color-h3: #63567e;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -78,20 +81,28 @@ body > main {
     flex: 1;
 }
 
-body > main > .intro {
-    margin: 0em 0 5em 0;
-    padding-right: 14px;
+body > main > div.intro {
+    margin-right: 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+body > main > div.intro > p {
+    margin-left: auto;
+    line-height: 1.5em;
     text-align: right;
     letter-spacing: 1px;
+    color: var(--color-muted);
 }
 
 h1,
 h2 {
-    color: var(--color-foreground);
+    color: var(--color-headings);
 }
 
 h3 {
-    color: var(--color-h2);
+    color: var(--color-headings);
 }
 
 a,
@@ -186,6 +197,7 @@ main section.posts {
 
 main section.posts ul {
     padding: 0;
+    margin: 0 1em;
 }
 
 main section.posts ul article {
@@ -205,6 +217,8 @@ main section.posts ul article li:hover {
     /* border-right: 7px var(--color-border-bar) solid; */
     /* box-shadow: inset -7px 0 0 -9px #2d2d2d; */
     background-color: var(--color-background-highlight);
+    transition: background 0.15s ease-in-out;
+
 }
 
 main section.posts ul article p,
@@ -232,8 +246,8 @@ footer {
 
 footer hr {
     border: none;
-    height: 2px;
-    background-color: #323232;
+    height: 1px;
+    background-color: var(--color-border-bar);
 }
 
 footer ul {
