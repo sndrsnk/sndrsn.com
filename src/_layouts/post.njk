@@ -1,6 +1,15 @@
 ---
 layout: base.njk
 ---
-<h1>{{ title }}</h1>
 
-{{ content | safe }}
+<div class="blog-post">
+    <article>
+        <div class="post-title-container">
+            {% if page.date %}
+                <div class="postlist-date post-date">{{ page.date | readableDate }}</div>
+            {% endif %}
+            <h1>{{ title }}</h1>
+        </div>
+        {{ content | safe }}
+    </article>
+</div>

@@ -5,10 +5,10 @@
                 <a href="{{ post.url }}">
                     <li>
                         {% if post.data.date %}
-                            <div>{{ post.data.date | readableDate }}</div>
+                            <div class="postlist-date post-date">{{ post.data.date | readableDate }}</div>
                         {% endif %}
                         <h3>{{ post.data.title }}</h3>
-                        <p>{{ post.data.description }}</p>
+                        <p class="postlist-desc">{{ post.data.description }}</p>
                     </li>
                 </a>
             </article>

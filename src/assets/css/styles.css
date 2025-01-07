@@ -28,24 +28,25 @@
     :root {
         --color-background: #252525;
         --color-background-highlight: #2d2d2d;
-        --color-foreground: #d9d9d9;
+        --color-foreground: #dcdcdc;
         --color-accent: #3d00a7;
-        --color-muted: #999999;
+        --color-muted: #a5a5a5;
         --color-border: #858585;
 
-        --color-title: #bba487;
+        /* --color-title: #bba487; */
+        --color-title: #276a8e;
         --color-menu-items: rgb(189 189 189);
-        ;
-        --color-border-bar: rgb(108, 108, 108);
+        /* --color-border-bar: rgb(108, 108, 108); */
+        --color-border-bar: #276a8e;
         --color-border-muted: #323232;
         /* change! */
 
-        --color-h2: #9087b5;
+        --color-headings: #fbfbfb;
     }
 }
 
 @view-transition {
-	navigation: auto;
+    navigation: auto;
 }
 
 /* Global stylesheet */
@@ -77,18 +78,18 @@ body {
     flex-direction: column;
 }
 
-body > main {
+body>main {
     flex: 1;
 }
 
-body > main > div.intro {
+body>main>div.intro {
     margin-right: 1em;
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
-body > main > div.intro > p {
+body>main>div.intro>p {
     margin-left: auto;
     line-height: 1.5em;
     text-align: right;
@@ -191,29 +192,27 @@ span.nav-separator:before {
 /* END navigation */
 
 /* main content */
-main section.posts {
+main .postlist {}
 
-}
-
-main section.posts ul {
+main .postlist ul {
     padding: 0;
     margin: 0 1em;
 }
 
-main section.posts ul article {
+main .postlist ul article {
     margin: 1em 0;
 }
 
-main section.posts ul li {
+main .postlist ul li {
     padding: 0.4em;
 }
 
-main section.posts ul li div {
+/* main section.posts ul li div {
     color: var(--color-muted);
     font-size: 0.9em;
-}
+} */
 
-main section.posts ul article li:hover {
+main .postlist ul article li:hover {
     /* border-right: 7px var(--color-border-bar) solid; */
     /* box-shadow: inset -7px 0 0 -9px #2d2d2d; */
     background-color: var(--color-background-highlight);
@@ -221,21 +220,62 @@ main section.posts ul article li:hover {
 
 }
 
-main section.posts ul article p,
-main section.posts ul article h3 {
+main .postlist ul article p,
+main .postlist ul article h3 {
     margin: 0;
 }
 
-main section.posts ul article p {
+main .postlist ul article p {
     margin-top: 0.3em;
 }
 
 
-main section.posts ul li {
+main .postlist ul li {
     list-style-type: none;
 }
 
+.post-date {
+    color: var(--color-muted);
+}
+
+main .postlist ul li .postlist-date {
+    font-size: 0.9em;
+    margin: 0 0 0.3em 0;
+}
+
+.postlist-desc {
+    line-height: 1.5em;
+}
 /* END main content */
+
+/* blog posts */
+.blog-post {
+    margin: 1.5em 1em 2em 1em;
+}
+
+.blog-post p,
+.blog-post .footnotes {
+    line-height: 1.5em;
+}
+
+.blog-post ol {
+    line-height: 1.5em;
+}
+
+.blog-post .footnote-ref {
+    color: var(--color-border-bar);
+}
+
+/* fix line spacing introduced by superscript */
+.blog-post sup {
+    line-height: 0;
+}
+
+.blog-post .footnotes a {
+    text-decoration: underline;
+}
+
+/* END blog posts */
 
 /* footer */
 footer {
@@ -244,7 +284,7 @@ footer {
     /* letter-spacing: 0.12rem; */
 }
 
-footer hr {
+hr {
     border: none;
     height: 1px;
     background-color: var(--color-border-bar);
@@ -264,6 +304,7 @@ footer ul li {
 
 footer ul li:last-child {
     float: right;
+    color: var(--color-border-bar);
 }
 
 /* END footer */

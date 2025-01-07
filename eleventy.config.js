@@ -2,6 +2,9 @@ import prettier from "prettier";
 import filters from "./src/_11ty/filters.js";
 import collections from "./src/_11ty/collections.js";
 
+// plugins
+import { footnote } from "@mdit/plugin-footnote";
+
 // note: use ESM modules (https://www.11ty.dev/docs/cjs-esm/)
 export default async function (eleventyConfig) {
     // Format HTML
@@ -21,6 +24,7 @@ export default async function (eleventyConfig) {
         return content;
     });
 
+    // Plugins
     eleventyConfig.addPlugin(filters);
 
     eleventyConfig.addPlugin(collections);
@@ -28,6 +32,9 @@ export default async function (eleventyConfig) {
     eleventyConfig.addPassthroughCopy({
         "./src/assets/": "/"
     });
+
+    eleventyConfig.amendLibrary("md", (mdLib) => mdLib.use(footnote));
+
     // Per-page bundles, see https://github.com/11ty/eleventy-plugin-bundle
     // Adds the {% css %} paired shortcode
     eleventyConfig.addBundle("css", {
