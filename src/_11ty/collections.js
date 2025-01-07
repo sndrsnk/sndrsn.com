@@ -1,8 +1,9 @@
-export default {
-    posts: function (collectionApi) {
-        return collectionApi.getFilteredByGlob('src/posts/**/*.md');
-    },
-    projects: function (collectionApi) {
-        return collectionApi.getFilteredByGlob('src/projects/**/*.md');
-    }
-};
+export default function(eleventyConfig) {
+    eleventyConfig.addCollection("posts", function (collectionApi) {
+        return collectionApi.getFilteredByGlob("./src/content/posts/*.md").reverse();
+    });
+
+    eleventyConfig.addCollection("recentPosts", function (collectionApi) {
+        return collectionApi.getFilteredByGlob("./src/content/posts/*.md").reverse().slice(0, 3);
+    });
+}

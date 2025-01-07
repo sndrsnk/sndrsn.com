@@ -8,45 +8,49 @@
         <link rel="alternate" href="feed/feed.xml" type="application/atom+xml" title="{{ metadata.title }}">
     <meta
         name="generator" content="{{ eleventy.generator }}">
-    {# <style>{% getBundle "css" %}</style> #}
+    {%- css %}{% include "src/assets/css/styles.css" %}{% endcss %}
+    <style>{% getBundle "css" %}</style>
     </head>
     <body>
         <header>
-            <a href="/" class="home-link">{{ metadata.title }}</a>
             <nav>
-                <ul class="nav">
-                    <li class="nav-item">
-                        <a href="posts">Posts</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="portfolio">Projects</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="about">About Me</a>
-                    </li>
-                </ul>
+                <div>
+                    <h1><a href="/">Kevin Sanderson</a></h1>
+                    <ul>
+                        <li class="nav-item">
+                            <a href="/posts">Posts</a>
+                        </li>
+                        <span class="nav-separator"></span>
+                        <li class="nav-item">
+                            <a href="/portfolio">Projects</a>
+                        </li>
+                        <span class="nav-separator"></span>
+                        <li class="nav-item">
+                            <a href="/about">About Me</a>
+                        </li>
+                    </ul>
+                </div>
             </nav>
         </header>
         <main>
             {{ content | safe }}
         </main>
         <footer>
-            <p>
-                Built with
-                <a href="https://www.11ty.dev/">Eleventy</a>.
-            </p><hr>
+            <hr>
             <ul class="footer-links">
-                <li>
-                    <a title="About Me" href="/about/">Kevin Sanderson</a>
-                </li>
                 <li>
                     <a title="Kevin Sanderson on LinkedIn" href="https://www.linkedin.com/in/ksndrsn/">LinkedIn</a>
                 </li>
+                <span class="nav-separator"></span>
                 <li>
                     <a title="@sndrsnk on GitHub" href="https://github.com/sndrsnk">GitHub</a>
                 </li>
+                <li class="built-with">
+                    Built with 
+                    <a href="https://www.11ty.dev/">Eleventy</a>.
+            </li>
             </ul>
-            <p></p>
         </footer>
+        <script type="module" src="{% getBundleFileUrl "js" %}"></script>
     </body>
 </html>
