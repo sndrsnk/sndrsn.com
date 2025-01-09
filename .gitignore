@@ -12,3 +12,6 @@ yarn.lock
 dist/
 node-supporters/
 src/_data/builtwith/
+
+# Content
+src/content/posts/draft

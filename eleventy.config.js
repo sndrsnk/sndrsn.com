@@ -3,7 +3,16 @@ import filters from "./src/_11ty/filters.js";
 import collections from "./src/_11ty/collections.js";
 
 // plugins
+import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
+
+import markdownIt from "markdown-it";
 import { footnote } from "@mdit/plugin-footnote";
+import markdownItAttrs from "markdown-it-attrs";
+
+const markdownItOptions = {
+	html: true,
+	breaks: false,
+};
 
 // note: use ESM modules (https://www.11ty.dev/docs/cjs-esm/)
 export default async function (eleventyConfig) {
@@ -25,6 +34,15 @@ export default async function (eleventyConfig) {
     });
 
     // Plugins
+    eleventyConfig.addPlugin(eleventyImageTransformPlugin, {
+        widths: [300, 600, 900, 1200],
+        defaultAttributes: {
+            loading: "lazy",
+            sizes: "100vw",
+            decoding: "async",
+        },
+    });
+
     eleventyConfig.addPlugin(filters);
 
     eleventyConfig.addPlugin(collections);
@@ -33,7 +51,11 @@ export default async function (eleventyConfig) {
         "./src/assets/": "/"
     });
 
-    eleventyConfig.amendLibrary("md", (mdLib) => mdLib.use(footnote));
+    const markdownLib = markdownIt(markdownItOptions)
+        .use(markdownItAttrs)
+        .use(footnote);
+
+    eleventyConfig.amendLibrary("md", (mdLib) => mdLib.use(footnote).use(markdownItAttrs));
 
     // Per-page bundles, see https://github.com/11ty/eleventy-plugin-bundle
     // Adds the {% css %} paired shortcode
