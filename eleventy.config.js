@@ -8,6 +8,7 @@ import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
 import markdownIt from "markdown-it";
 import { footnote } from "@mdit/plugin-footnote";
 import markdownItAttrs from "markdown-it-attrs";
+import imgMagnifier from "eleventy-plugin-img-magnifier"
 
 const markdownItOptions = {
 	html: true,
@@ -47,6 +48,8 @@ export default async function (eleventyConfig) {
 
     eleventyConfig.addPlugin(collections);
 
+    eleventyConfig.addPlugin(imgMagnifier)
+
     eleventyConfig.addPassthroughCopy({
         "./src/assets/": "/"
     });
@@ -66,6 +69,7 @@ export default async function (eleventyConfig) {
     eleventyConfig.addBundle("js", {
         toFileDirectory: "dist",
     });
+    
     eleventyConfig.addWatchTarget('./src/assets/css/'),
         eleventyConfig.addWatchTarget('./src/assets/js/')
 };

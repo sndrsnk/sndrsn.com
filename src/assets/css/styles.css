@@ -34,10 +34,12 @@
         --color-border: #858585;
 
         /* --color-title: #bba487; */
-        --color-title: #276a8e;
+        /* --color-title: #276a8e; */
+        --color-title: #987db0;
         --color-menu-items: rgb(189 189 189);
         /* --color-border-bar: rgb(108, 108, 108); */
-        --color-border-bar: #276a8e;
+        /* --color-border-bar: #276a8e; */
+        --color-border-bar: #987db0;
         --color-border-muted: #323232;
         /* change! */
 
@@ -80,6 +82,7 @@ body {
 
 body>main {
     flex: 1;
+    margin-bottom: 1em;
 }
 
 body>main>div.intro {
@@ -251,6 +254,7 @@ main .postlist ul li .postlist-date {
 .postlist-desc {
     line-height: 1.5em;
 }
+
 /* END main content */
 
 /* blog posts */
@@ -263,8 +267,13 @@ main .postlist ul li .postlist-date {
     line-height: 1.5em;
 }
 
-.blog-post ol {
+.blog-post ol,
+.blog-post ul {
     line-height: 1.5em;
+}
+
+.blog-post picture+em {
+    font-size: 0.8em;
 }
 
 .blog-post blockquote {
@@ -305,6 +314,36 @@ main .postlist ul li .postlist-date {
 }
 
 /* END blog posts */
+
+/* portfolio */
+.portfolio {
+    line-height: 1.5em;
+}
+
+.portfolio h1,
+.portfolio h2,
+.portfolio h3 {
+    margin-bottom: 0.5em;
+}
+
+.portfolio ul {
+    padding: 0;
+    margin: 0em 0em 1em 0em;
+}
+
+.portfolio ul li {
+    list-style-type: none;
+    margin: 0em 0em 2em 1em;
+}
+
+/* END portfolio */
+
+/* about */
+.about {
+    line-height: 1.5em;
+}
+
+/* END about */
 
 /* footer */
 footer {
