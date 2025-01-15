@@ -77,7 +77,7 @@ export default async function (eleventyConfig) {
 export const config = {
     markdownTemplateEngine: 'njk',
     htmlTemplateEngine: 'njk',
-    templateFormats: ['md', 'njk', 'html', '11ty.js'],
+    templateFormats: ['md', 'njk', 'html', '11ty.js', 'txt'],
     dir: {
         input: 'src/content',
         output: 'dist',

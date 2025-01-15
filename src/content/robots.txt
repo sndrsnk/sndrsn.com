@@ -1,0 +1,4 @@
+Sitemap: https://www.sndrsn.com/sitemap.xml
+
+User-agent: *
+Disallow:
