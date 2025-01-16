@@ -1,8 +1,8 @@
 export default {
-	title: "sndrsn.com",
+	title: "Kevin Sanderson",
 	url: "https://www.sndrsn.com/",
 	language: "en",
-	description: "I write about sound experiments and my work as a sound artist.",
+	description: "I write about my work as a sound artist.",
 	author: {
 		name: "Kevin Sanderson",
 		email: "kevin@sndrsn.com",

@@ -267,6 +267,10 @@ main .postlist ul li .postlist-date {
     line-height: 1.5em;
 }
 
+.blog-post .footnotes-list {
+    padding: 0 1em 0 2em;
+}
+
 .blog-post ol,
 .blog-post ul {
     line-height: 1.5em;
