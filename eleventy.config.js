@@ -8,11 +8,12 @@ import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
 import markdownIt from "markdown-it";
 import { footnote } from "@mdit/plugin-footnote";
 import markdownItAttrs from "markdown-it-attrs";
-import imgMagnifier from "eleventy-plugin-img-magnifier"
+import imgMagnifier from "eleventy-plugin-img-magnifier";
+import implicitFigures from "markdown-it-image-figures";
 
 const markdownItOptions = {
-	html: true,
-	breaks: false,
+    html: true,
+    breaks: false,
 };
 
 // note: use ESM modules (https://www.11ty.dev/docs/cjs-esm/)
@@ -54,11 +55,12 @@ export default async function (eleventyConfig) {
         "./src/assets/": "/"
     });
 
-    const markdownLib = markdownIt(markdownItOptions)
-        .use(markdownItAttrs)
-        .use(footnote);
+    // const markdownLib = markdownIt(markdownItOptions)
+    //     .use(markdownItAttrs)
+    //     .use(footnote)
+    //     .use(implicitFigures, { figcaption: true });
 
-    eleventyConfig.amendLibrary("md", (mdLib) => mdLib.use(footnote).use(markdownItAttrs));
+    eleventyConfig.amendLibrary("md", (mdLib) => mdLib.use(footnote).use(markdownItAttrs).use(implicitFigures, { figcaption: true }));
 
     // Per-page bundles, see https://github.com/11ty/eleventy-plugin-bundle
     // Adds the {% css %} paired shortcode
@@ -69,7 +71,7 @@ export default async function (eleventyConfig) {
     eleventyConfig.addBundle("js", {
         toFileDirectory: "dist",
     });
-    
+
     eleventyConfig.addWatchTarget('./src/assets/css/'),
         eleventyConfig.addWatchTarget('./src/assets/js/')
 };

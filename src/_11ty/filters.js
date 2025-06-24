@@ -15,4 +15,22 @@ export default function(eleventyConfig) {
 	eleventyConfig.addFilter("cssmin", function (code) {
 		return new CleanCSS({}).minify(code).styles;
 	});
+
+	// Sitemap priority filter
+	eleventyConfig.addFilter("sitemapPriority", function(page) {
+		// Homepage gets highest priority
+		if (page.url === "/") return "1.0";
+		// Posts get high priority
+		if (page.url.includes("/posts/")) return "0.8";
+		// Other pages get medium priority
+		return "0.5";
+	});
+
+	// Sitemap changefreq filter
+	eleventyConfig.addFilter("sitemapChangefreq", function(page) {
+		// Posts change more frequently
+		if (page.url.includes("/posts/")) return "weekly";
+		// Static pages change less frequently
+		return "monthly";
+	});
 };
