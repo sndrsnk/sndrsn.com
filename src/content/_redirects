@@ -1,0 +1,7 @@
+# Redirect apex domain to www
+http://sndrsn.com/*   https://www.sndrsn.com/:splat   301!
+https://sndrsn.com/*  https://www.sndrsn.com/:splat   301!
+
+# Optional: Redirect www to apex (if you prefer)
+# http://www.sndrsn.com/*   https://sndrsn.com/:splat   301!
+# https://www.sndrsn.com/*  https://sndrsn.com/:splat   301! 
