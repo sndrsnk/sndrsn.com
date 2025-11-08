@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ephemeral Audio Player - Howler.js Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        .container {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        h1 {
+            margin-top: 0;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .player {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .track-selector {
+            margin-bottom: 20px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background: #333;
+            color: #fff;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 1em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #444;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s;
+        }
+        
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #333;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.85em;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .degradation-viz {
+            margin-top: 20px;
+            padding: 20px;
+            background: #333;
+            border-radius: 6px;
+        }
+        
+        .degradation-bar {
+            height: 30px;
+            background: #444;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .degradation-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #51cf66, #ffd43b, #ff6b6b);
+            transition: width 0.3s;
+        }
+        
+        .warning {
+            background: #ff6b6b;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Ephemeral Audio Player</h1>
+        
+        <div class="warning">
+            ⚠️ Each play degrades the track permanently. Listen mindfully.
+        </div>
+        
+        <div class="player">
+            <div class="track-selector">
+                <select id="track-select">
+                    <option value="">Loading tracks...</option>
+                </select>
+            </div>
+            
+            <div class="controls">
+                <button id="play-btn" disabled>▶ Play</button>
+                <button id="pause-btn" disabled>⏸ Pause</button>
+                <button id="stop-btn" disabled>⏹ Stop</button>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="current-time">0:00</span>
+                    <span id="total-time">0:00</span>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Degradation</div>
+                    <div class="stat-value" id="degradation-stat">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Streams</div>
+                    <div class="stat-value" id="streams-stat">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Duration</div>
+                    <div class="stat-value" id="duration-stat">0:00</div>
+                </div>
+            </div>
+            
+            <div class="degradation-viz">
+                <div class="stat-label">Degradation Progress</div>
+                <div class="degradation-bar">
+                    <div class="degradation-fill" id="degradation-fill" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/howler@2.2.3/dist/howler.min.js"></script>
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:5001';
+        
+        let sound = null;
+        let tracks = [];
+        let currentTrack = null;
+        
+        // DOM elements
+        const trackSelect = document.getElementById('track-select');
+        const playBtn = document.getElementById('play-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const progressFill = document.getElementById('progress-fill');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalTimeEl = document.getElementById('total-time');
+        const degradationStat = document.getElementById('degradation-stat');
+        const streamsStat = document.getElementById('streams-stat');
+        const durationStat = document.getElementById('duration-stat');
+        const degradationFill = document.getElementById('degradation-fill');
+        
+        // Load tracks
+        async function loadTracks() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/tracks`);
+                tracks = await response.json();
+                
+                trackSelect.innerHTML = '<option value="">Select a track...</option>' +
+                    tracks.map(track => 
+                        `<option value="${track.filename}">${track.title} (${track.overall_degradation.toFixed(1)}% degraded)</option>`
+                    ).join('');
+                
+                trackSelect.disabled = false;
+            } catch (error) {
+                console.error('Error loading tracks:', error);
+                trackSelect.innerHTML = '<option value="">Error loading tracks</option>';
+            }
+        }
+        
+        // Load track stats
+        async function loadTrackStats(filename) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats/${filename}`);
+                const stats = await response.json();
+                
+                degradationStat.textContent = stats.overall_degradation.toFixed(1) + '%';
+                streamsStat.textContent = stats.total_streams;
+                durationStat.textContent = formatDuration(stats.duration);
+                degradationFill.style.width = stats.overall_degradation + '%';
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        // Track selection
+        trackSelect.addEventListener('change', (e) => {
+            const filename = e.target.value;
+            if (!filename) return;
+            
+            // Stop current sound
+            if (sound) {
+                sound.unload();
+            }
+            
+            currentTrack = filename;
+            
+            // Create new Howler sound
+            sound = new Howl({
+                src: [`${API_BASE_URL}/stream/${filename}`],
+                format: ['wav'],
+                html5: true, // Use HTML5 Audio for streaming
+                onload: function() {
+                    playBtn.disabled = false;
+                    totalTimeEl.textContent = formatDuration(sound.duration());
+                    loadTrackStats(filename);
+                },
+                onplay: function() {
+                    playBtn.disabled = true;
+                    pauseBtn.disabled = false;
+                    stopBtn.disabled = false;
+                    updateProgress();
+                },
+                onpause: function() {
+                    playBtn.disabled = false;
+                    pauseBtn.disabled = true;
+                },
+                onstop: function() {
+                    playBtn.disabled = false;
+                    pauseBtn.disabled = true;
+                    stopBtn.disabled = true;
+                    progressFill.style.width = '0%';
+                    currentTimeEl.textContent = '0:00';
+                },
+                onend: function() {
+                    playBtn.disabled = false;
+                    pauseBtn.disabled = true;
+                    stopBtn.disabled = true;
+                    loadTrackStats(filename); // Refresh stats after play
+                }
+            });
+        });
+        
+        // Controls
+        playBtn.addEventListener('click', () => {
+            if (sound) sound.play();
+        });
+        
+        pauseBtn.addEventListener('click', () => {
+            if (sound) sound.pause();
+        });
+        
+        stopBtn.addEventListener('click', () => {
+            if (sound) sound.stop();
+        });
+        
+        // Progress bar seeking
+        progressBar.addEventListener('click', (e) => {
+            if (!sound) return;
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            const seekTime = sound.duration() * percent;
+            sound.seek(seekTime);
+        });
+        
+        // Update progress
+        function updateProgress() {
+            if (!sound || !sound.playing()) return;
+            
+            const seek = sound.seek();
+            const duration = sound.duration();
+            const percent = (seek / duration) * 100;
+            
+            progressFill.style.width = percent + '%';
+            currentTimeEl.textContent = formatDuration(seek);
+            
+            requestAnimationFrame(updateProgress);
+        }
+        
+        // Format time
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Initialize
+        loadTracks();
+        
+        // Refresh track list every 30 seconds
+        setInterval(loadTracks, 30000);
+    </script>
+</body>
+</html>

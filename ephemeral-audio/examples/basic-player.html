@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ephemeral Audio Player - Basic Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .track-list {
+            margin: 20px 0;
+        }
+        
+        .track-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .track-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .track-info {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .degradation {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 3px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+        
+        .degradation.low {
+            background: #51cf66;
+        }
+        
+        .degradation.medium {
+            background: #ffd43b;
+            color: #333;
+        }
+        
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Ephemeral Audio Player</h1>
+        
+        <div class="warning">
+            ⚠️ <strong>Warning:</strong> Each time you play a track, it degrades permanently. 
+            Listen carefully - you're changing the artwork forever.
+        </div>
+        
+        <div id="track-list" class="track-list">
+            <div class="loading">Loading tracks...</div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - update this to your backend URL
+        const API_BASE_URL = 'http://localhost:5001';
+        
+        // Fetch and display tracks
+        async function loadTracks() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/tracks`);
+                const tracks = await response.json();
+                
+                const trackList = document.getElementById('track-list');
+                
+                if (tracks.length === 0) {
+                    trackList.innerHTML = '<p>No tracks available. Add WAV files to the audio/ directory.</p>';
+                    return;
+                }
+                
+                trackList.innerHTML = tracks.map(track => {
+                    const degradation = track.overall_degradation;
+                    const degradationClass = degradation < 30 ? 'low' : degradation < 70 ? 'medium' : 'high';
+                    const duration = formatDuration(track.duration);
+                    
+                    return `
+                        <div class="track-item">
+                            <div class="track-title">
+                                ${track.title}
+                                <span class="degradation ${degradationClass}">
+                                    ${degradation.toFixed(1)}% degraded
+                                </span>
+                            </div>
+                            <div class="track-info">
+                                Duration: ${duration} | Streams: ${track.total_streams}
+                            </div>
+                            <audio controls preload="none">
+                                <source src="${API_BASE_URL}/stream/${track.filename}" type="audio/wav">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading tracks:', error);
+                document.getElementById('track-list').innerHTML = 
+                    '<p style="color: red;">Error loading tracks. Make sure the server is running.</p>';
+            }
+        }
+        
+        // Format duration in MM:SS
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Load tracks on page load
+        loadTracks();
+        
+        // Refresh track list every 10 seconds to show updated degradation
+        setInterval(loadTracks, 10000);
+    </script>
+</body>
+</html>
