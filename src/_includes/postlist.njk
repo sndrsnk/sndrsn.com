@@ -2,15 +2,15 @@
     {%- if collections[collectionName] | length > 0 -%}
         {%- for post in collections[collectionName] -%}
             <article>
-                <a href="{{ post.url }}">
-                    <li>
+                <li>
+                    <a href="{{ post.url }}">
                         {% if post.data.date %}
                             <div class="postlist-date post-date">{{ post.data.date | readableDate }}</div>
                         {% endif %}
                         <h3>{{ post.data.title }}</h3>
                         <p class="postlist-desc">{{ post.data.description }}</p>
-                    </li>
-                </a>
+                    </a>
+                </li>
             </article>
         {%- endfor -%}
     {%- endif -%}

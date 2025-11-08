@@ -49,7 +49,7 @@ export default async function (eleventyConfig) {
 
     eleventyConfig.addPlugin(collections);
 
-    eleventyConfig.addPlugin(imgMagnifier)
+    eleventyConfig.addPlugin(imgMagnifier);
 
     eleventyConfig.addPassthroughCopy({
         "./src/assets/": "/"
