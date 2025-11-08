@@ -109,9 +109,9 @@ You can also test the API manually using curl:
    curl http://localhost:5001/stats/test-track.wav | python3 -m json.tool
    ```
 
-4. **Test the frontend:**
+4. **Test the waveform player:**
    
-   Open `examples/basic-player.html` or `examples/howler-player.html` in your browser (make sure the `API_BASE_URL` matches your server port).
+   Open your browser to `http://localhost:5001/player` to see the interactive waveform player in action.
 
 ## Running the Server
 
@@ -128,7 +128,21 @@ source .venv/bin/activate
 python app.py
 ```
 
-The server will start on `http://localhost:5000`
+The server will start on `http://localhost:5001` (or the port specified in your `.env` file).
+
+### Using the Waveform Player
+
+Once the server is running, open your browser to:
+
+```
+http://localhost:5001/player
+```
+
+This will load the interactive waveform player with:
+- Real-time waveform visualization
+- Transport controls (play/pause, skip, rewind, fast-forward)
+- Live degradation statistics
+- Visual progress indicator
 
 ### Production
 

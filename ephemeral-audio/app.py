@@ -14,6 +14,7 @@ load_dotenv()
 from metadata import MetadataManager
 from lock_manager import SegmentLockManager
 from streaming import AudioStreamingService
+from streaming_readonly import stream_audio_readonly
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -100,6 +101,13 @@ def index():
     }
 
 
+@app.route('/player')
+def player():
+    """Serve the Tone.js player"""
+    from flask import send_file
+    return send_file('examples/tone-player.html')
+
+
 @app.route('/tracks')
 def get_tracks():
     """
@@ -136,43 +144,162 @@ def get_tracks():
 @app.route('/stream/<filename>')
 def stream_audio(filename):
     """
-    Stream audio file with real-time degradation.
+    Stream audio file with range request support for seeking.
     
     Args:
         filename: Name of WAV file to stream
         
-    Query Parameters:
-        start: Starting position in seconds (default: 0)
-        
     Returns:
-        Audio stream with chunked transfer encoding
+        Audio stream with range support
     """
     try:
-        # Get start position from query params
-        start_seconds = float(request.args.get('start', 0))
+        file_path = os.path.join(app.config['AUDIO_DIR'], filename)
         
-        # Create streaming generator
-        audio_generator = streaming_service.stream_audio(filename, start_seconds)
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'Audio file not found'}), 404
         
-        # Return streaming response
-        return Response(
-            audio_generator,
-            mimetype='audio/wav',
-            headers={
-                'Content-Disposition': f'inline; filename="{filename}"',
-                'Accept-Ranges': 'none',  # Seeking not fully supported
-                'Cache-Control': 'no-cache'
-            }
-        )
-    
-    except FileNotFoundError:
-        return jsonify({'error': 'Audio file not found'}), 404
-    
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 400
+        # Increment total streams (only on first request, not range requests)
+        if 'Range' not in request.headers:
+            metadata_manager.increment_total_streams(filename)
+        
+        # Get file size
+        file_size = os.path.getsize(file_path)
+        
+        # Handle range requests for seeking
+        range_header = request.headers.get('Range')
+        if range_header:
+            # Parse range header (e.g., "bytes=0-1023")
+            byte_range = range_header.replace('bytes=', '').split('-')
+            start = int(byte_range[0]) if byte_range[0] else 0
+            end = int(byte_range[1]) if len(byte_range) > 1 and byte_range[1] else file_size - 1
+            
+            length = end - start + 1
+            
+            def generate():
+                with open(file_path, 'rb') as f:
+                    f.seek(start)
+                    remaining = length
+                    while remaining > 0:
+                        chunk_size = min(8192, remaining)
+                        chunk = f.read(chunk_size)
+                        if not chunk:
+                            break
+                        remaining -= len(chunk)
+                        yield chunk
+            
+            return Response(
+                generate(),
+                206,  # Partial Content
+                mimetype='audio/wav',
+                headers={
+                    'Content-Range': f'bytes {start}-{end}/{file_size}',
+                    'Accept-Ranges': 'bytes',
+                    'Content-Length': str(length),
+                    'Cache-Control': 'no-cache'
+                }
+            )
+        else:
+            # Full file request
+            def generate():
+                with open(file_path, 'rb') as f:
+                    while True:
+                        chunk = f.read(8192)
+                        if not chunk:
+                            break
+                        yield chunk
+            
+            return Response(
+                generate(),
+                mimetype='audio/wav',
+                headers={
+                    'Content-Length': str(file_size),
+                    'Accept-Ranges': 'bytes',
+                    'Cache-Control': 'no-cache'
+                }
+            )
     
     except Exception as e:
         return jsonify({'error': f'Streaming error: {str(e)}'}), 500
+    
+    except Exception as e:
+        return jsonify({'error': f'Streaming error: {str(e)}'}), 500
+
+
+@app.route('/degrade/<filename>', methods=['POST'])
+def degrade_segment(filename):
+    """
+    Degrade a specific segment of a track.
+    
+    Args:
+        filename: Name of WAV file
+        
+    JSON Body:
+        segment_index: Index of segment to degrade
+        
+    Returns:
+        Success message
+    """
+    try:
+        data = request.get_json()
+        segment_index = data.get('segment_index')
+        
+        if segment_index is None:
+            return jsonify({'error': 'segment_index required'}), 400
+        
+        # Get track metadata
+        metadata = metadata_manager.get_track_metadata(filename)
+        if metadata is None:
+            return jsonify({'error': 'Track not found'}), 404
+        
+        # Validate segment index
+        if segment_index < 0 or segment_index >= metadata['total_segments']:
+            return jsonify({'error': 'Invalid segment index'}), 400
+        
+        # Degrade the segment
+        file_path = os.path.join(app.config['AUDIO_DIR'], filename)
+        
+        with lock_manager.segment_lock(filename, segment_index) as lock:
+            if lock.acquired:
+                # Get current play count
+                play_count = metadata['segment_play_counts'][segment_index]
+                
+                # Read segment
+                import wav_handler
+                audio_data, _ = wav_handler.read_segment(
+                    file_path,
+                    segment_index,
+                    app.config['SEGMENT_DURATION']
+                )
+                
+                # Apply degradation
+                import degradation
+                degraded_audio = degradation.apply_dropout(
+                    audio_data,
+                    play_count,
+                    app.config['DEGRADATION_RATE']
+                )
+                
+                # Write back
+                wav_handler.write_segment(
+                    file_path,
+                    segment_index,
+                    app.config['SEGMENT_DURATION'],
+                    degraded_audio
+                )
+                
+                # Increment play count
+                metadata_manager.increment_segment_play_count(filename, segment_index)
+                
+                return jsonify({
+                    'success': True,
+                    'segment_index': segment_index,
+                    'play_count': play_count + 1
+                })
+            else:
+                return jsonify({'error': 'Could not acquire lock'}), 503
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/stats/<filename>')
