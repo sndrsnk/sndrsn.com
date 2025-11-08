@@ -351,6 +351,10 @@
             
             stopProgressTracking(index);
             
+            // Reset playhead position
+            const playhead = document.getElementById(`playhead-${index}`);
+            if (playhead) playhead.style.left = '0%';
+            
             // Reset button
             const playBtn = document.getElementById(`play-btn-${index}`);
             if (playBtn) playBtn.textContent = '▶';
