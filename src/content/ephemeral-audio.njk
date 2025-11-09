@@ -22,9 +22,7 @@ description: Audio that degrades in real-time as you listen. Each section deteri
 import 'https://unpkg.com/tone@14.8.49/build/Tone.js';
 
 // Configuration
-const API_BASE_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:5001' 
-    : 'https://ephemeral-audio.api.sndrsn.com';
+const API_BASE_URL = '{{ process.env.EPHEMERAL_AUDIO_API_URL or "https://ephemeral-audio.api.sndrsn.com" }}';
 
 const SEGMENT_DURATION = 0.5;
 
