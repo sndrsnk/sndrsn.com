@@ -26,10 +26,12 @@
                         <li class="nav-item">
                             <a href="/portfolio">Portfolio</a>
                         </li>
+                        {% if process.env.ENABLE_EPHEMERAL_AUDIO !== "false" %}
                         <span class="nav-separator"></span>
                         <li class="nav-item">
                             <a href="/ephemeral-audio">Ephemeral Audio</a>
                         </li>
+                        {% endif %}
                         <span class="nav-separator"></span>
                         <li class="nav-item">
                             <a href="/about">About Me</a>
