@@ -16,3 +16,6 @@ src/_data/builtwith/
 
 # Content
 src/content/posts/draft
+
+# Symlinks
+ephemeral-audio-api
