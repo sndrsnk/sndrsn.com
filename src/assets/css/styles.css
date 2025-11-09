@@ -114,11 +114,8 @@ img {
     height: auto;
 }
 
-a,
-a:visited,
-a:hover,
-a:active {
-    color: inherit;
+a {
+    color: var(--color-title);
     text-decoration: none;
 }
 
@@ -158,6 +155,14 @@ nav h1 {
     text-align: left;
     font-size: 1.8rem;
     color: var(--color-title);
+}
+
+nav a,
+nav a:visited,
+nav a:hover,
+nav a:active {
+    color: inherit;
+    text-decoration: none;
 }
 
 nav ul {
@@ -200,8 +205,6 @@ span.nav-separator:before {
 /* END navigation */
 
 /* main content */
-main .postlist {}
-
 main .postlist ul {
     padding: 0;
     margin: 0 1em;
