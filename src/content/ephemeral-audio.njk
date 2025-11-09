@@ -1,0 +1,342 @@
+---
+layout: base.njk
+title: Ephemeral Audio
+description: Audio that degrades in real-time as you listen. Each section deteriorates permanently when played.
+---
+
+{%- css %}{% include "src/assets/css/ephemeral-audio.css" %}{% endcss %}
+
+<h1>{{ title }}</h1>
+
+<p class="subtitle">This audio degrades in real-time as you listen. Each section deteriorates permanently when played.</p>
+
+<div id="track-list" class="track-list">
+    <div class="loading">Loading tracks...</div>
+</div>
+
+{% js %}
+import 'https://unpkg.com/tone@14.8.49/build/Tone.js';
+
+// Configuration - update this when deploying
+const API_BASE_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5001' 
+    : 'https://api.yourdomain.com';  // Update with your actual domain
+
+const SEGMENT_DURATION = 0.5;
+
+// Track players and state
+const players = new Map();
+const degradedSegments = new Map();
+const progressIntervals = new Map();
+const waveformCache = new Map();
+
+async function loadTracks() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/tracks`);
+        const tracks = await response.json();
+        
+        const trackList = document.getElementById('track-list');
+        
+        if (tracks.length === 0) {
+            trackList.innerHTML = '<p>No tracks available.</p>';
+            return;
+        }
+        
+        trackList.innerHTML = tracks.map((track, index) => {
+            const degradation = track.overall_degradation;
+            const degradationClass = degradation < 30 ? 'low' : degradation < 70 ? 'medium' : 'high';
+            const duration = formatDuration(track.duration);
+            
+            return `
+                <div class="track-item" data-filename="${track.filename}">
+                    <div class="track-title">
+                        ${track.title}
+                        <span class="degradation ${degradationClass}" data-degradation>
+                            ${degradation.toFixed(1)}% degraded
+                        </span>
+                    </div>
+                    <div class="track-info">
+                        Duration: ${duration} | Streams: <span data-streams>${track.total_streams}</span>
+                    </div>
+                    <div class="waveform-container" id="waveform-container-${index}">
+                        <canvas class="waveform-canvas" id="waveform-${index}"></canvas>
+                        <div class="playhead" id="playhead-${index}"></div>
+                    </div>
+                    <div class="transport-controls">
+                        <button class="transport-btn" onclick="window.ephemeralAudio.skipBack(${index}, '${track.filename}')" title="Reload & Skip Back">↻</button>
+                        <button class="transport-btn play-btn" id="play-btn-${index}" onclick="window.ephemeralAudio.togglePlay(${index}, '${track.filename}', ${track.duration})">▶</button>
+                        <button class="transport-btn" onclick="window.ephemeralAudio.fastForward(${index})" title="Fast Forward">→</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Pre-load and draw waveforms for all tracks
+        tracks.forEach(async (track, index) => {
+            const url = `${API_BASE_URL}/stream/${track.filename}?v=${Date.now()}`;
+            const buffer = await Tone.Buffer.fromUrl(url);
+            drawWaveform(index, buffer);
+        });
+        
+    } catch (error) {
+        console.error('Error loading tracks:', error);
+        document.getElementById('track-list').innerHTML = 
+            '<p style="color: red;">Error loading tracks. Make sure the API is running.</p>';
+    }
+}
+
+async function togglePlay(index, filename, duration) {
+    const playBtn = document.getElementById(`play-btn-${index}`);
+    
+    if (!players.has(index)) {
+        await createPlayer(index, filename, duration);
+        playBtn.textContent = '⏸';
+    } else {
+        const player = players.get(index);
+        if (player.state === 'started') {
+            player.stop();
+            stopProgressTracking(index);
+            playBtn.textContent = '▶';
+        } else {
+            player.start();
+            startProgressTracking(index, duration);
+            playBtn.textContent = '⏸';
+        }
+    }
+}
+
+async function createPlayer(index, filename, duration) {
+    console.log(`Creating player for ${filename}`);
+    
+    const url = `${API_BASE_URL}/stream/${filename}?v=${Date.now()}`;
+    const buffer = await Tone.Buffer.fromUrl(url);
+    
+    drawWaveform(index, buffer);
+    
+    const player = new Tone.Player(buffer).toDestination();
+    player.loop = false;
+    
+    player.onstop = () => {
+        const playBtn = document.getElementById(`play-btn-${index}`);
+        if (playBtn) playBtn.textContent = '▶';
+        stopProgressTracking(index);
+    };
+    
+    players.set(index, player);
+    
+    await Tone.start();
+    player.start();
+    startProgressTracking(index, duration);
+    startDegradationTracking(index, filename, player, duration);
+}
+
+function startProgressTracking(index, duration) {
+    const startTime = Tone.now();
+    const player = players.get(index);
+    const buffer = player.buffer;
+    
+    const interval = setInterval(() => {
+        const player = players.get(index);
+        if (!player || player.state !== 'started') {
+            clearInterval(interval);
+            return;
+        }
+        
+        const elapsed = Tone.now() - startTime;
+        const progress = (elapsed / duration) * 100;
+        const playhead = document.getElementById(`playhead-${index}`);
+        if (playhead) {
+            playhead.style.left = Math.min(100, progress) + '%';
+        }
+        
+        drawWaveform(index, buffer, progress);
+        
+        if (elapsed >= duration) {
+            player.stop();
+            clearInterval(interval);
+        }
+    }, 50);
+    
+    progressIntervals.set(index, interval);
+}
+
+function stopProgressTracking(index) {
+    const interval = progressIntervals.get(index);
+    if (interval) {
+        clearInterval(interval);
+        progressIntervals.delete(index);
+    }
+}
+
+function startDegradationTracking(index, filename, player, duration) {
+    if (!degradedSegments.has(filename)) {
+        degradedSegments.set(filename, new Set());
+    }
+    
+    const startTime = Tone.now();
+    
+    const checkInterval = setInterval(async () => {
+        if (player.state !== 'started') {
+            clearInterval(checkInterval);
+            return;
+        }
+        
+        const elapsed = Tone.now() - startTime;
+        const segmentIndex = Math.floor(elapsed / SEGMENT_DURATION);
+        const degraded = degradedSegments.get(filename);
+        
+        if (!degraded.has(segmentIndex) && segmentIndex >= 0) {
+            degraded.add(segmentIndex);
+            
+            try {
+                await fetch(`${API_BASE_URL}/degrade/${filename}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ segment_index: segmentIndex })
+                });
+                console.log(`Degraded segment ${segmentIndex}`);
+            } catch (error) {
+                console.error('Error degrading segment:', error);
+            }
+        }
+    }, 100);
+}
+
+async function skipBack(index, filename) {
+    console.log(`Reloading ${filename}`);
+    
+    const oldPlayer = players.get(index);
+    if (oldPlayer) {
+        oldPlayer.stop();
+        oldPlayer.dispose();
+        players.delete(index);
+    }
+    
+    stopProgressTracking(index);
+    
+    const playhead = document.getElementById(`playhead-${index}`);
+    if (playhead) playhead.style.left = '0%';
+    
+    const playBtn = document.getElementById(`play-btn-${index}`);
+    if (playBtn) playBtn.textContent = '▶';
+    
+    degradedSegments.delete(filename);
+    waveformCache.delete(index);
+    
+    const url = `${API_BASE_URL}/stream/${filename}?v=${Date.now()}`;
+    const buffer = await Tone.Buffer.fromUrl(url);
+    drawWaveform(index, buffer);
+    
+    console.log('Player disposed, ready to reload');
+}
+
+function fastForward(index) {
+    const player = players.get(index);
+    if (!player || player.state !== 'started') return;
+    
+    const currentTime = Tone.Transport.seconds;
+    player.seek(currentTime + 5);
+}
+
+function drawWaveform(index, buffer, progressPercent = 0) {
+    const canvas = document.getElementById(`waveform-${index}`);
+    if (!canvas) return;
+    
+    const container = canvas.parentElement;
+    const dpr = window.devicePixelRatio || 1;
+    
+    if (!waveformCache.has(index)) {
+        canvas.width = container.clientWidth * dpr;
+        canvas.height = container.clientHeight * dpr;
+        canvas.style.width = container.clientWidth + 'px';
+        canvas.style.height = container.clientHeight + 'px';
+        
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        const data = buffer.getChannelData(0);
+        const step = Math.ceil(data.length / width);
+        const amp = height / 2;
+        
+        const color = getComputedStyle(document.documentElement)
+            .getPropertyValue('--color-border-bar').trim();
+        
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.6;
+        
+        for (let i = 0; i < width; i++) {
+            let min = 1.0;
+            let max = -1.0;
+            
+            for (let j = 0; j < step; j++) {
+                const datum = data[(i * step) + j];
+                if (datum < min) min = datum;
+                if (datum > max) max = datum;
+            }
+            
+            const x = i;
+            const y = (1 + min * 0.5) * amp;
+            const h = Math.max(1, (max - min) * amp * 0.5);
+            
+            ctx.fillRect(x, y, 1, h);
+        }
+        
+        waveformCache.set(index, { ctx, width, height });
+    }
+    
+    if (progressPercent > 0) {
+        const cached = waveformCache.get(index);
+        if (cached) {
+            const playedWidth = cached.width * (progressPercent / 100);
+            cached.ctx.clearRect(0, 0, playedWidth, cached.height);
+        }
+    }
+}
+
+function formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+async function updateStats() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/tracks`);
+        const tracks = await response.json();
+        
+        tracks.forEach(track => {
+            const trackItem = document.querySelector(`[data-filename="${track.filename}"]`);
+            if (!trackItem) return;
+            
+            const degradation = track.overall_degradation;
+            const degradationClass = degradation < 30 ? 'low' : degradation < 70 ? 'medium' : 'high';
+            
+            const degradationSpan = trackItem.querySelector('[data-degradation]');
+            if (degradationSpan) {
+                degradationSpan.textContent = `${degradation.toFixed(1)}% degraded`;
+                degradationSpan.className = `degradation ${degradationClass}`;
+            }
+            
+            const streamsSpan = trackItem.querySelector('[data-streams]');
+            if (streamsSpan) {
+                streamsSpan.textContent = track.total_streams;
+            }
+        });
+    } catch (error) {
+        console.error('Error updating stats:', error);
+    }
+}
+
+// Export functions to global scope for onclick handlers
+window.ephemeralAudio = {
+    togglePlay,
+    skipBack,
+    fastForward
+};
+
+// Initialize
+loadTracks();
+setInterval(updateStats, 5000);
+{% endjs %}
