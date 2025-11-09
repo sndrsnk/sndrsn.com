@@ -21,10 +21,10 @@ description: Audio that degrades in real-time as you listen. Each section deteri
 {% js %}
 import 'https://unpkg.com/tone@14.8.49/build/Tone.js';
 
-// Configuration - update this when deploying
+// Configuration
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:5001' 
-    : 'https://api.yourdomain.com';  // Update with your actual domain
+    : 'https://ephemeral-audio.api.sndrsn.com';
 
 const SEGMENT_DURATION = 0.5;
 
