@@ -26,6 +26,12 @@
                         <li class="nav-item">
                             <a href="/portfolio">Portfolio</a>
                         </li>
+                        {% if env.enableEphemeralAudio %}
+                        <span class="nav-separator"></span>
+                        <li class="nav-item">
+                            <a href="/ephemeral-audio">Ephemeral Audio</a>
+                        </li>
+                        {% endif %}
                         <span class="nav-separator"></span>
                         <li class="nav-item">
                             <a href="/about">About Me</a>

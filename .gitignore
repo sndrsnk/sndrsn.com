@@ -7,6 +7,7 @@ node_modules/
 yarn.lock
 .vscode
 **/.DS_Store
+.kiro/
 
 # App-specific
 dist/
@@ -15,3 +16,6 @@ src/_data/builtwith/
 
 # Content
 src/content/posts/draft
+
+# Symlinks
+ephemeral-audio-api
