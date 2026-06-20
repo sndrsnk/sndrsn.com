@@ -22,6 +22,10 @@
     --color-headings: #252525;
     --color-h2: #504a5b;
     --color-h3: #63567e;
+
+    --color-footer-links: #a0a0a0;
+    --color-footer-meta: #c8c8c8;
+    --color-footer-hr: #c0c0c0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -44,6 +48,10 @@
         /* change! */
 
         --color-headings: #fbfbfb;
+
+        --color-footer-links: #7a7a7a;
+        --color-footer-meta: #555555;
+        --color-footer-hr: #606060;
     }
 }
 
@@ -368,22 +376,25 @@ main .postlist ul li .postlist-date {
 
 /* about */
 .about {
-    line-height: 1.5em;
+    line-height: 1.8em;
+}
+
+.about p {
+    margin-bottom: 1.2em;
 }
 
 /* END about */
 
 /* footer */
 footer {
-    color: var(--color-menu-items);
+    color: var(--color-footer-links);
     font-size: 0.8em;
-    /* letter-spacing: 0.12rem; */
 }
 
 hr {
     border: none;
     height: 1px;
-    background-color: var(--color-border-bar);
+    background-color: var(--color-footer-hr);
 }
 
 footer ul {
@@ -400,7 +411,12 @@ footer ul li {
 
 footer ul li:last-child {
     float: right;
-    color: var(--color-border-bar);
+    color: var(--color-footer-meta);
+}
+
+footer a,
+footer a:visited {
+    color: var(--color-footer-links);
 }
 
 /* END footer */
